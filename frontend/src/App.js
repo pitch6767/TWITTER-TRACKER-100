@@ -37,7 +37,7 @@ function TweetTracker() {
   });
   const [alertThresholdConfig, setAlertThresholdConfig] = useState(2);
   const [githubToken, setGithubToken] = useState('');
-  const [githubUsername, setGithubUsername] = useState('');
+  const [githubUsername, setGithubUsername] = useState('pitch6767');
   const [githubBackups, setGithubBackups] = useState([]);
   const [githubStats, setGithubStats] = useState({});
   
