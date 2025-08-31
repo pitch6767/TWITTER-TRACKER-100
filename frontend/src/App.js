@@ -665,19 +665,27 @@ function TweetTracker() {
               <CardContent>
                 <div className="text-center py-8">
                   <div className="text-6xl font-bold text-green-400 mb-4">
-                    {monitoringStatus.monitored_accounts_count || 0}
+                    {monitoringStatus.real_following_count || monitoringStatus.monitored_accounts_count || 0}
                   </div>
-                  <p className="text-xl text-slate-300 mb-2">X Accounts Monitored</p>
+                  <p className="text-xl text-slate-300 mb-2">@Sploofmeme Following Accounts</p>
                   <p className="text-sm text-slate-500 mb-4">
-                    Automatically synced from @Sploofmeme's following list
+                    {monitoringStatus.monitoring_type === 'sploofmeme_auto_follow_tracking' ? 
+                      'Real-time sync from @Sploofmeme X account' : 
+                      'Using fallback accounts (browser initialization pending)'
+                    }
                   </p>
                   <div className="bg-slate-700/50 p-4 rounded-lg">
                     <p className="text-xs text-slate-400 mb-2">
                       💡 To add/remove accounts: Follow or unfollow them on @Sploofmeme's X account
                     </p>
                     <p className="text-xs text-slate-500">
-                      System will automatically detect changes on next monitoring cycle
+                      System automatically syncs every monitoring cycle (30s)
                     </p>
+                    {(monitoringStatus.monitored_accounts_count || 0) <= 10 && (
+                      <p className="text-xs text-yellow-400 mt-2">
+                        ⚠️ Currently using fallback accounts - full @Sploofmeme sync in progress...
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardContent>
