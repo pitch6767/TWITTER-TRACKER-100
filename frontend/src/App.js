@@ -617,44 +617,66 @@ function TweetTracker() {
 
           {/* Accounts Tab */}
           <TabsContent value="accounts" className="space-y-6">
-            {/* Automated Monitoring Control */}
+            {/* Real-time Monitoring Control */}
             <Card className="bg-gradient-to-r from-green-900/30 to-blue-900/30 border-green-500/30 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-green-400 flex items-center">
-                  <Activity className="h-5 w-5 mr-2" />
-                  Automated X Account Monitoring
+                  <Zap className="h-5 w-5 mr-2" />
+                  Real-time X Account Monitoring
                 </CardTitle>
                 <CardDescription>
-                  Automatically monitor all accounts that @Sploofmeme follows for token mentions
+                  Advanced monitoring with browser automation, RSS feeds, and smart filtering
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-4">
-                      <Badge variant={monitoringStatus.is_monitoring ? 'default' : 'secondary'} className="text-sm">
-                        {monitoringStatus.is_monitoring ? '🟢 Active Monitoring' : '⏸️ Monitoring Stopped'}
-                      </Badge>
-                      <span className="text-sm text-slate-400">
-                        {monitoringStatus.monitored_accounts_count} accounts being monitored
-                      </span>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-4">
+                        <Badge variant={monitoringStatus.is_monitoring ? 'default' : 'secondary'} className="text-sm">
+                          {monitoringStatus.is_monitoring ? '🚀 Real-time Active' : '⏸️ Monitoring Stopped'}
+                        </Badge>
+                        <span className="text-sm text-slate-400">
+                          {monitoringStatus.monitored_accounts_count} accounts • Threshold: {monitoringStatus.alert_threshold || 2}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-xs text-slate-500">
+                        <Shield className="h-3 w-3" />
+                        <span>Filters: Old tokens & tokens with CAs ({monitoringStatus.known_tokens_filtered || 0} filtered)</span>
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-500">
-                      The system automatically checks all followed accounts for token mentions every minute
-                    </p>
+                    <div className="flex space-x-2">
+                      {!monitoringStatus.is_monitoring ? (
+                        <Button onClick={startMonitoring} className="bg-green-600 hover:bg-green-700">
+                          <Zap className="h-4 w-4 mr-2" />
+                          Start Real-time
+                        </Button>
+                      ) : (
+                        <Button onClick={stopMonitoring} variant="outline" className="border-red-500 text-red-400 hover:bg-red-500/10">
+                          <Activity className="h-4 w-4 mr-2" />
+                          Stop Monitoring
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex space-x-2">
-                    {!monitoringStatus.is_monitoring ? (
-                      <Button onClick={startMonitoring} className="bg-green-600 hover:bg-green-700">
-                        <Activity className="h-4 w-4 mr-2" />
-                        Start Monitoring
-                      </Button>
-                    ) : (
-                      <Button onClick={stopMonitoring} variant="outline" className="border-red-500 text-red-400 hover:bg-red-500/10">
-                        <Activity className="h-4 w-4 mr-2" />
-                        Stop Monitoring
-                      </Button>
-                    )}
+                  
+                  {/* Alert Threshold Configuration */}
+                  <div className="flex items-center space-x-4 p-3 bg-slate-800/50 rounded-lg">
+                    <Filter className="h-4 w-4 text-purple-400" />
+                    <Label htmlFor="threshold" className="text-sm">Alert Threshold:</Label>
+                    <Input
+                      id="threshold"
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={alertThresholdConfig}
+                      onChange={(e) => setAlertThresholdConfig(parseInt(e.target.value))}
+                      className="w-20 bg-slate-700 border-slate-600"
+                    />
+                    <span className="text-xs text-slate-400">accounts needed</span>
+                    <Button onClick={updateAlertThreshold} size="sm" className="bg-purple-600 hover:bg-purple-700">
+                      Update
+                    </Button>
                   </div>
                 </div>
               </CardContent>
