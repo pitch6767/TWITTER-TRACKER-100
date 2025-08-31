@@ -200,7 +200,7 @@ async def broadcast_to_clients(data: dict):
         disconnected_clients = []
         for connection in active_websocket_connections:
             try:
-                await connection.send_text(json.dumps(data))
+                await connection.send_text(json.dumps(data, cls=DateTimeEncoder))
             except Exception:
                 disconnected_clients.append(connection)
                 
