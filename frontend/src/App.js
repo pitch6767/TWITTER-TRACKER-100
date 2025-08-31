@@ -55,12 +55,13 @@ function TweetTracker() {
 
   const fetchInitialData = async () => {
     try {
-      const [alertsName, alertsCA, accounts, performance, versionsData] = await Promise.all([
+      const [alertsName, alertsCA, accounts, performance, versionsData, monitoringStatusData] = await Promise.all([
         fetch(`${API}/alerts/names`).then(r => r.json()),
         fetch(`${API}/alerts/cas`).then(r => r.json()),
         fetch(`${API}/accounts`).then(r => r.json()),
         fetch(`${API}/performance`).then(r => r.json()),
-        fetch(`${API}/versions`).then(r => r.json())
+        fetch(`${API}/versions`).then(r => r.json()),
+        fetch(`${API}/monitoring/status`).then(r => r.json())
       ]);
       
       setNameAlerts(alertsName.alerts || []);
@@ -68,6 +69,7 @@ function TweetTracker() {
       setTrackedAccounts(accounts || []);
       setPerformanceData(performance.performance || []);
       setVersions(versionsData.versions || []);
+      setMonitoringStatus(monitoringStatusData);
     } catch (error) {
       console.error('Error fetching initial data:', error);
       toast({
