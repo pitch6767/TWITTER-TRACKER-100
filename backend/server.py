@@ -687,8 +687,11 @@ async def setup_github_integration(request: GitHubSetupRequest):
     except Exception as e:
         return {"error": str(e)}
 
+class GitHubBackupRequest(BaseModel):
+    version_tag: str
+
 @api_router.post("/github/backup")
-async def create_github_backup(version_tag: str):
+async def create_github_backup(request: GitHubBackupRequest):
     """Create a backup to GitHub"""
     try:
         app_data = {
@@ -702,7 +705,7 @@ async def create_github_backup(version_tag: str):
             'monitoring_config': monitoring_config.dict()
         }
         
-        result = await github_integration.create_backup(app_data, version_tag)
+        result = await github_integration.create_backup(app_data, request.version_tag)
         return result
     except Exception as e:
         return {"error": str(e)}
