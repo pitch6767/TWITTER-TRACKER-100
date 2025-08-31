@@ -574,6 +574,10 @@ async def startup_event():
     # Start Pump.fun WebSocket client in background
     asyncio.create_task(pump_client.connect())
     
+    # Start X account monitoring
+    await asyncio.sleep(2)  # Give time for DB to be ready
+    await x_monitor.start_monitoring()
+    
     logger.info("Tweet Tracker started successfully")
 
 @app.on_event("shutdown")
