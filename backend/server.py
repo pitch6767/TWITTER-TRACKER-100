@@ -125,6 +125,7 @@ class XAccountMonitor:
     def __init__(self):
         self.monitored_accounts = []
         self.is_monitoring = False
+        self.known_tokens_with_ca = set()  # Track tokens that already have CAs
         self.token_patterns = [
             r'\$[A-Z]{2,10}\b',  # $TOKEN format
             r'\b[A-Z]{2,10}(?:\s+(?:coin|token|gem|moon|pump|lambo))\b',  # TOKEN coin/token
