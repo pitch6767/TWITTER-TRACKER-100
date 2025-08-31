@@ -481,7 +481,7 @@ function TweetTracker() {
             </TabsTrigger>
             <TabsTrigger value="accounts" className="data-[state=active]:bg-purple-600">
               <Users className="h-4 w-4 mr-2" />
-              Accounts ({trackedAccounts.length})
+              Accounts ({monitoringStatus.monitored_accounts_count || 0})
             </TabsTrigger>
             <TabsTrigger value="performance" className="data-[state=active]:bg-purple-600">
               <Activity className="h-4 w-4 mr-2" />
