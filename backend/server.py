@@ -204,9 +204,37 @@ class XAccountMonitor:
         except Exception as e:
             logger.error(f"Error processing token mention: {e}")
             
-    async def check_for_name_alerts(self, token_name: str):
-        """Check if this token mention should trigger a name alert"""
+    async def check_token_has_ca(self, token_name: str) -> bool:
+        """Check if a token already has a Contract Address"""
         try:
+            # Check in CA alerts collection
+            ca_exists = await db.ca_alerts.find_one({
+                "token_name": {"$regex": f"^{token_name}$", "$options": "i"}
+            })
+            
+            if ca_exists:
+                logger.info(f"Token {token_name} already has CA - filtering from Name Alerts")
+                return True
+                
+            # Also check known tokens with CAs
+            if token_name.upper() in self.known_tokens_with_ca:
+                logger.info(f"Token {token_name} is in known tokens with CA - filtering from Name Alerts")
+                return True
+                
+            return False
+            
+        except Exception as e:
+            logger.error(f"Error checking if token has CA: {e}")
+            return False  # If unsure, allow the alert
+
+    async def check_for_name_alerts(self, token_name: str):
+        """Check if this token mention should trigger a name alert (ONLY for tokens WITHOUT CA)"""
+        try:
+            # CRITICAL: Check if token already has a CA - if yes, NO name alert
+            if await self.check_token_has_ca(token_name):
+                logger.info(f"⚠️ Token {token_name} already has CA - skipping Name Alert")
+                return
+            
             # Get recent mentions of this token (last hour)
             from datetime import datetime, timedelta
             one_hour_ago = datetime.now() - timedelta(hours=1)
@@ -225,8 +253,13 @@ class XAccountMonitor:
                 unique_accounts.add(mention['account_username'])
                 tweet_urls.append(mention['tweet_url'])
                 
-            # If 2+ unique accounts mentioned this token, create alert
+            # If 2+ unique accounts mentioned this token AND it has no CA, create alert
             if len(unique_accounts) >= 2:
+                # Double-check token doesn't have CA before creating alert
+                if await self.check_token_has_ca(token_name):
+                    logger.info(f"⚠️ Token {token_name} got CA during processing - skipping Name Alert")
+                    return
+                
                 name_alert = NameAlert(
                     token_name=token_name,
                     first_seen=min(mention['mentioned_at'] for mention in recent_mentions),
@@ -240,7 +273,7 @@ class XAccountMonitor:
                 alert_dict = name_alert.dict()
                 name_alerts.append(alert_dict)
                 
-                logger.info(f"🚨 NAME ALERT: {token_name} mentioned by {len(unique_accounts)} accounts")
+                logger.info(f"🚨 NAME ALERT (NO CA): {token_name} mentioned by {len(unique_accounts)} accounts")
                 
                 # Broadcast to clients
                 await broadcast_to_clients({
