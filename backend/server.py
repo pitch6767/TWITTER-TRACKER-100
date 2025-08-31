@@ -346,9 +346,15 @@ class PumpFunWebSocketClient:
         except Exception as e:
             logger.error(f"Error processing Pump.fun message: {e}")
 
-# Initialize WebSocket client and X monitor
+# Initialize WebSocket client and monitoring systems
 pump_client = PumpFunWebSocketClient()
 x_monitor = XAccountMonitor()
+real_time_monitor = RealTimeXMonitor(db)
+github_integration = GitHubIntegration()
+
+# Global configuration
+monitoring_config = MonitoringConfig()
+github_config = GitHubConfig()
 
 async def broadcast_to_clients(data: dict):
     """Broadcast data to all connected WebSocket clients"""
