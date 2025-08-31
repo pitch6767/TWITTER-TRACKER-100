@@ -499,31 +499,47 @@ function TweetTracker() {
                 <CardContent>
                   <div className="space-y-4 max-h-96 overflow-y-auto">
                     {caAlerts.length > 0 ? caAlerts.map((alert, index) => (
-                      <div key={alert.id || index} className="p-4 bg-slate-700/50 rounded-lg border-l-4 border-green-500">
+                      <div key={alert.id || index} className="p-4 bg-slate-700/50 rounded-lg border-l-4 border-green-500 relative">
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="font-semibold text-green-300">{alert.token_name}</h3>
-                          <Badge variant="outline" className="text-green-400 border-green-400">
-                            <DollarSign className="h-3 w-3 mr-1" />
-                            {formatCurrency(alert.market_cap)}
-                          </Badge>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="outline" className="text-green-400 border-green-400">
+                              <DollarSign className="h-3 w-3 mr-1" />
+                              {formatCurrency(alert.market_cap)}
+                            </Badge>
+                            <Badge variant="outline" className="text-yellow-400 border-yellow-400 animate-pulse">
+                              🚀 TRENDING
+                            </Badge>
+                          </div>
                         </div>
                         <div className="text-sm text-slate-400 space-y-2">
                           <div className="flex items-center">
                             <Clock className="h-3 w-3 mr-1" />
-                            {alert.alert_time_utc}
+                            {alert.alert_time_utc} • Less than 1 minute old
                           </div>
                           <div className="font-mono text-xs bg-slate-800 p-2 rounded">
                             CA: {alert.contract_address}
                           </div>
-                          <a
-                            href={alert.photon_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs"
-                          >
-                            <ExternalLink className="h-3 w-3 mr-1" />
-                            View Chart
-                          </a>
+                          <div className="flex items-center space-x-2">
+                            <a
+                              href={`https://photon-sol.tinyastro.io/en/lp/${alert.contract_address}?timeframe=1s`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-4 py-2 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-lg"
+                            >
+                              <TrendingUp className="h-4 w-4 mr-2" />
+                              📈 1s Chart • TRADE NOW
+                            </a>
+                            <button
+                              onClick={() => navigator.clipboard.writeText(alert.contract_address)}
+                              className="inline-flex items-center bg-slate-600 hover:bg-slate-700 px-3 py-2 rounded-lg text-xs transition-colors"
+                            >
+                              📋 Copy CA
+                            </button>
+                          </div>
+                          <div className="text-xs text-yellow-400 bg-yellow-900/20 p-2 rounded border border-yellow-500/30">
+                            ⚡ Trending token alert: This token was mentioned by multiple accounts before getting CA!
+                          </div>
                         </div>
                       </div>
                     )) : (
