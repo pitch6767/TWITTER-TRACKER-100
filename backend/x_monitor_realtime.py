@@ -487,9 +487,9 @@ class RealTimeXMonitor:
             logger.error(f"Error processing mentions for background tracking: {e}")
             
     async def activate_ca_monitoring(self, token_name: str, mention_count: int):
-        """Activate intensive CA monitoring for a trending token"""
+        """Activate ULTRA-FAST CA monitoring for a trending token"""
         try:
-            # Add to CA monitoring watchlist
+            # Add to database monitoring queue
             await self.db.ca_monitoring_queue.insert_one({
                 "token_name": token_name,
                 "mention_count": mention_count,
@@ -497,7 +497,10 @@ class RealTimeXMonitor:
                 "status": "active"
             })
             
-            logger.info(f"🎯 CA MONITORING ACTIVATED: {token_name} ({mention_count} mentions)")
+            # Add to in-memory watchlist for ultra-fast lookup
+            self.ca_watchlist.add(token_name.upper())
+            
+            logger.info(f"🎯⚡ ULTRA-FAST CA MONITORING ACTIVATED: {token_name} ({mention_count} mentions) - 2-second scanning!")
             
         except Exception as e:
             logger.error(f"Error activating CA monitoring: {e}")
