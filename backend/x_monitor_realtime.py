@@ -379,8 +379,18 @@ class RealTimeXMonitor:
             logger.error(f"Error getting Sploofmeme's following list: {e}")
             return []
 
+    async def ultra_fast_ca_monitoring(self):
+        """ULTRA-FAST CA monitoring - checks every 2 seconds"""
+        while self.is_monitoring:
+            try:
+                await self.check_for_trending_ca_alerts()
+                await asyncio.sleep(2)  # ULTRA-FAST: Check every 2 seconds for CAs
+            except Exception as e:
+                logger.error(f"Error in ultra-fast CA monitoring: {e}")
+                await asyncio.sleep(1)
+
     async def start_monitoring(self, target_account: str = "Sploofmeme"):
-        """Start real-time monitoring of all accounts that target_account follows"""
+        """Start DUAL-SPEED monitoring: Tweets(30s) + CAs(2s)"""
         try:
             self.is_monitoring = True
             
@@ -400,15 +410,18 @@ class RealTimeXMonitor:
             # Load known tokens with CAs
             await self.load_known_tokens_with_ca()
             
-            logger.info(f"Started real-time monitoring of {len(following_accounts)} accounts that @{target_account} follows")
+            logger.info(f"Started DUAL-SPEED monitoring: Tweets({len(following_accounts)} accounts, 30s) + CAs(2s ultra-fast)")
             
-            # Start monitoring loop with 30-second intervals
+            # Start ULTRA-FAST CA monitoring in parallel
+            asyncio.create_task(self.ultra_fast_ca_monitoring())
+            
+            # Tweet monitoring loop (30-second intervals)
             while self.is_monitoring:
                 try:
                     await self.monitoring_cycle()
-                    await asyncio.sleep(30)  # Check every 30 seconds for faster detection
+                    await asyncio.sleep(30)  # Tweet mentions: 30 seconds
                 except Exception as e:
-                    logger.error(f"Error in monitoring cycle: {e}")
+                    logger.error(f"Error in tweet monitoring cycle: {e}")
                     await asyncio.sleep(15)
                     
         except Exception as e:
