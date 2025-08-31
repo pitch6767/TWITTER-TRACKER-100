@@ -484,21 +484,23 @@ function TweetTracker() {
                             <Clock className="h-3 w-3 mr-1" />
                             First seen: {formatTime(alert.first_seen)}
                           </div>
-                          <div>Accounts: {alert.accounts_mentioned?.join(', ')}</div>
                           {alert.tweet_urls?.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
-                              {alert.tweet_urls.slice(0, 3).map((url, idx) => (
-                                <a
-                                  key={idx}
-                                  href={url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs bg-purple-600 hover:bg-purple-700 px-2 py-1 rounded flex items-center"
-                                >
-                                  <ExternalLink className="h-3 w-3 mr-1" />
-                                  Tweet {idx + 1}
-                                </a>
-                              ))}
+                              {alert.tweet_urls.slice(0, 5).map((url, idx) => {
+                                const accountName = alert.accounts_mentioned?.[idx] || `Account ${idx + 1}`;
+                                return (
+                                  <a
+                                    key={idx}
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded flex items-center transition-colors"
+                                  >
+                                    <ExternalLink className="h-3 w-3 mr-1" />
+                                    @{accountName}
+                                  </a>
+                                );
+                              })}
                             </div>
                           )}
                         </div>
