@@ -23,6 +23,11 @@ function TweetTracker() {
   const [versions, setVersions] = useState([]);
   const [alertThreshold, setAlertThreshold] = useState(2);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
+  const [monitoringStatus, setMonitoringStatus] = useState({
+    is_monitoring: false,
+    monitored_accounts_count: 0,
+    accounts: []
+  });
   const [newAccountUsername, setNewAccountUsername] = useState('');
   const [newAccountDisplayName, setNewAccountDisplayName] = useState('');
   const [tokenMention, setTokenMention] = useState({
