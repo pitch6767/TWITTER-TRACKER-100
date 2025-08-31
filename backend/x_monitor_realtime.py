@@ -447,9 +447,13 @@ class RealTimeXMonitor:
             logger.error(f"Error in monitoring cycle: {e}")
             
     async def process_mentions_for_alerts(self, mentions: List[Dict]):
-        """Process mentions and trigger alerts based on threshold"""
+        """Process mentions for background tracking (no visual alerts)"""
         try:
-            # Group mentions by token name
+            # Store all mentions in database first
+            if mentions:
+                await self.db.token_mentions.insert_many(mentions)
+                
+            # Group mentions by token name for background tracking
             token_groups = {}
             
             for mention in mentions:
@@ -460,36 +464,13 @@ class RealTimeXMonitor:
                     
                 token_groups[token_name].append(mention)
                 
-            # Check each token group against threshold
+            # Check each token for background tracking activation
             for token_name, token_mentions in token_groups.items():
-                unique_accounts = set(m['account_username'] for m in token_mentions)
-                
-                if len(unique_accounts) >= self.alert_threshold:
-                    # Create name alert
-                    alert_data = {
-                        'token_name': token_name,
-                        'first_seen': min(m['mentioned_at'] for m in token_mentions),
-                        'quorum_count': len(unique_accounts),
-                        'accounts_mentioned': list(unique_accounts),
-                        'tweet_urls': [m['tweet_url'] for m in token_mentions],
-                        'alert_triggered': True,
-                        'created_at': datetime.now(timezone.utc)
-                    }
-                    
-                    # Store in database
-                    await self.db.name_alerts.insert_one(alert_data)
-                    
-                    logger.info(f"🚨 NAME ALERT: {token_name} mentioned by {len(unique_accounts)} accounts")
-                    
-                    # Here you would broadcast to WebSocket clients
-                    # await broadcast_to_clients({"type": "name_alert", "data": alert_data})
-                    
-            # Store all mentions in database
-            if mentions:
-                await self.db.token_mentions.insert_many(mentions)
+                # Use background tracking instead of alerts
+                await self.check_for_background_tracking(token_name)
                 
         except Exception as e:
-            logger.error(f"Error processing mentions for alerts: {e}")
+            logger.error(f"Error processing mentions for background tracking: {e}")
             
     async def activate_ca_monitoring(self, token_name: str, mention_count: int):
         """Activate intensive CA monitoring for a trending token"""
