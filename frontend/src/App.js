@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
-import { Bell, Activity, Users, TrendingUp, Save, RotateCcw, Settings, AlertTriangle, ExternalLink, Clock, DollarSign } from 'lucide-react';
+import { Bell, Activity, Users, TrendingUp, Save, RotateCcw, Settings, AlertTriangle, ExternalLink, Clock, DollarSign, Github, Zap, Filter, Shield } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
 import { Button } from './components/ui/button';
 import { Badge } from './components/ui/badge';
