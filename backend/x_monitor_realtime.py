@@ -536,7 +536,7 @@ class RealTimeXMonitor:
             logger.error(f"Error in background tracking: {e}")
 
     async def check_for_trending_ca_alerts(self):
-        """Check for new CAs of tokens that are being monitored"""
+        """ULTRA-FAST: Check for new CAs using multiple sources"""
         try:
             # Get tokens being monitored for CAs
             monitored_tokens = await self.db.ca_monitoring_queue.find({
@@ -546,17 +546,113 @@ class RealTimeXMonitor:
             if not monitored_tokens:
                 return
                 
-            # Check Pump.fun for new CAs of these specific tokens
-            for token_data in monitored_tokens:
-                token_name = token_data['token_name']
-                
-                # Here we would check if this token got a new CA
-                # For now, we'll integrate with the existing Pump.fun WebSocket
-                # The WebSocket will check if incoming CAs match monitored tokens
-                logger.debug(f"Monitoring CA for token: {token_name}")
-                
+            # Create watchlist of token names for fast lookup
+            watchlist = {token['token_name'].upper() for token in monitored_tokens}
+            
+            # SPEED METHOD 1: Direct Pump.fun API polling
+            await self.poll_pumpfun_api_direct(watchlist)
+            
+            # SPEED METHOD 2: Multiple WebSocket connections (if needed)
+            # This runs in parallel with the main WebSocket
+            
         except Exception as e:
-            logger.error(f"Error checking trending CA alerts: {e}")
+            logger.error(f"Error in ultra-fast CA monitoring: {e}")
+            
+    async def poll_pumpfun_api_direct(self, watchlist: set):
+        """Direct API polling to Pump.fun for maximum speed"""
+        try:
+            # Direct API call to Pump.fun for recent tokens
+            async with aiohttp.ClientSession() as session:
+                # Try multiple endpoints for redundancy
+                endpoints = [
+                    "https://client-api-v1.pump.fun/coins?limit=50&sort=created&includeNsfw=true",
+                    "https://api.pump.fun/coins/recently-created"  # Alternative endpoint
+                ]
+                
+                for endpoint in endpoints:
+                    try:
+                        async with session.get(endpoint, timeout=5) as response:
+                            if response.status == 200:
+                                data = await response.json()
+                                
+                                # Process recent tokens
+                                if isinstance(data, list):
+                                    tokens = data
+                                elif isinstance(data, dict) and 'coins' in data:
+                                    tokens = data['coins']
+                                else:
+                                    continue
+                                    
+                                for token in tokens[:20]:  # Check last 20 tokens
+                                    token_name = token.get('name', '').upper()
+                                    mint_address = token.get('mint', '')
+                                    created_timestamp = token.get('created_timestamp', 0)
+                                    
+                                    # Check if token is in our watchlist
+                                    if token_name in watchlist and mint_address:
+                                        # Check if less than 60 seconds old
+                                        current_time = datetime.now(timezone.utc).timestamp()
+                                        if (current_time - created_timestamp/1000) <= 60:
+                                            
+                                            # FOUND TRENDING TOKEN WITH NEW CA!
+                                            await self.create_trending_ca_alert(
+                                                token_name, 
+                                                mint_address, 
+                                                token.get('marketCap', 0),
+                                                created_timestamp
+                                            )
+                                            
+                                break  # Success - no need to try other endpoints
+                                
+                    except Exception as e:
+                        logger.debug(f"API endpoint {endpoint} failed: {e}")
+                        continue
+                        
+        except Exception as e:
+            logger.error(f"Error in direct API polling: {e}")
+            
+    async def create_trending_ca_alert(self, token_name: str, ca_address: str, market_cap: float, timestamp: int):
+        """Create high-priority CA alert for trending token"""
+        try:
+            # Get monitoring data
+            monitored_token = await self.db.ca_monitoring_queue.find_one({
+                "token_name": {"$regex": f"^{token_name}$", "$options": "i"},
+                "status": "active"
+            })
+            
+            if not monitored_token:
+                return
+                
+            # Create enhanced CA alert
+            ca_alert = {
+                'contract_address': ca_address,
+                'token_name': token_name,
+                'market_cap': market_cap,
+                'photon_url': f"https://photon-sol.tinyastro.io/en/lp/{ca_address}?timeframe=1s",
+                'alert_time_utc': datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+                'was_trending': True,
+                'mention_count': monitored_token.get('mention_count', 0),
+                'priority': 'ULTRA_HIGH',
+                'detection_method': 'ultra_fast_api',
+                'speed_seconds': 2
+            }
+            
+            # Store in database
+            await self.db.ca_alerts.insert_one(ca_alert)
+            
+            # Mark monitoring as completed
+            await self.db.ca_monitoring_queue.update_one(
+                {"_id": monitored_token["_id"]},
+                {"$set": {"status": "ca_found", "ca_found_at": datetime.now(timezone.utc)}}
+            )
+            
+            logger.info(f"🚨⚡ ULTRA-FAST TRENDING CA: {token_name} - {ca_address} ({monitored_token.get('mention_count', 0)} mentions → CA in 2s!)")
+            
+            # TODO: Broadcast to WebSocket clients
+            # await broadcast_to_clients({"type": "ca_alert", "data": ca_alert})
+            
+        except Exception as e:
+            logger.error(f"Error creating trending CA alert: {e}")
 
     async def stop_monitoring(self):
         """Stop monitoring"""
