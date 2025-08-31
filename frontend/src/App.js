@@ -323,7 +323,32 @@ function TweetTracker() {
   };
 
   const setupGitHub = async () => {
-    if (!githubToken.trim() || !githubUsername.trim()) return;
+    if (!githubToken.trim()) {
+      toast({
+        title: "⚠️ Token Required",
+        description: "Please enter your GitHub Personal Access Token (not password!)",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!githubUsername.trim()) {
+      toast({
+        title: "⚠️ Username Required", 
+        description: "Please enter your GitHub username",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!githubToken.startsWith('ghp_')) {
+      toast({
+        title: "⚠️ Invalid Token Format",
+        description: "GitHub tokens start with 'ghp_'. Please check your token.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     try {
       const response = await fetch(`${API}/github/setup`, {
@@ -343,17 +368,28 @@ function TweetTracker() {
         });
         fetchInitialData(); // Refresh to get backups
       } else {
+        let errorMsg = "Unknown error";
+        if (result.error?.includes("Bad credentials")) {
+          errorMsg = "Invalid token. Please check your GitHub Personal Access Token.";
+        } else if (result.error?.includes("Not Found")) {
+          errorMsg = "Username not found. Please check your GitHub username.";
+        } else if (result.error?.includes("rate limit")) {
+          errorMsg = "GitHub rate limit exceeded. Please try again later.";
+        } else {
+          errorMsg = result.error || "Failed to setup GitHub";
+        }
+        
         toast({
-          title: "Error",
-          description: result.error || "Failed to setup GitHub",
+          title: "❌ GitHub Connection Failed",
+          description: errorMsg,
           variant: "destructive"
         });
       }
     } catch (error) {
       console.error('Error setting up GitHub:', error);
       toast({
-        title: "Error",
-        description: "Failed to connect to GitHub",
+        title: "❌ Connection Error",
+        description: "Failed to connect to GitHub. Check your internet connection.",
         variant: "destructive"
       });
     }
