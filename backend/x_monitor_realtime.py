@@ -563,6 +563,7 @@ class RealTimeXMonitor:
                 # Here we would check if this token got a new CA
                 # For now, we'll integrate with the existing Pump.fun WebSocket
                 # The WebSocket will check if incoming CAs match monitored tokens
+                logger.debug(f"Monitoring CA for token: {token_name}")
                 
         except Exception as e:
             logger.error(f"Error checking trending CA alerts: {e}")
