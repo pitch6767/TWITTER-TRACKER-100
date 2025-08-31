@@ -473,44 +473,14 @@ function TweetTracker() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {nameAlerts.length > 0 ? nameAlerts.map((alert, index) => (
-                      <div key={alert.id || index} className="p-4 bg-slate-700/50 rounded-lg border-l-4 border-orange-500">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-semibold text-orange-300">{alert.token_name}</h3>
-                          <Badge variant="secondary">{alert.quorum_count} mentions</Badge>
-                        </div>
-                        <div className="text-sm text-slate-400 space-y-1">
-                          <div className="flex items-center">
-                            <Clock className="h-3 w-3 mr-1" />
-                            First seen: {formatTime(alert.first_seen)}
-                          </div>
-                          {alert.tweet_urls?.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {alert.tweet_urls.slice(0, 5).map((url, idx) => {
-                                const accountName = alert.accounts_mentioned?.[idx] || `Account ${idx + 1}`;
-                                return (
-                                  <a
-                                    key={idx}
-                                    href={url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded flex items-center transition-colors"
-                                  >
-                                    <ExternalLink className="h-3 w-3 mr-1" />
-                                    @{accountName}
-                                  </a>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
+                    <div className="text-center text-slate-500 py-8">
+                      <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <div className="space-y-2">
+                        <p className="font-medium">Background Name Tracking Active</p>
+                        <p className="text-xs">Silently monitoring token mentions...</p>
+                        <p className="text-xs text-purple-400">CA alerts will appear when trending tokens get new contracts</p>
                       </div>
-                    )) : (
-                      <div className="text-center text-slate-500 py-8">
-                        <AlertTriangle className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                        <p>No name alerts yet</p>
-                      </div>
-                    )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
