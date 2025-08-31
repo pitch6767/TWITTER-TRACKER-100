@@ -1,16 +1,12 @@
 import asyncio
 import logging
 import re
-import json
-import random
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Set
 from playwright.async_api import async_playwright, Browser, Page
 import aiohttp
 from bs4 import BeautifulSoup
 from motor.motor_asyncio import AsyncIOMotorDatabase
-import time
-import os
 
 logger = logging.getLogger(__name__)
 
