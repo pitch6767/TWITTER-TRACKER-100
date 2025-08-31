@@ -765,10 +765,73 @@ function TweetTracker() {
           </TabsContent>
 
           {/* Versions Tab */}
-          <TabsContent value="versions">
+          <TabsContent value="versions" className="space-y-6">
+            {/* GitHub Integration */}
+            <Card className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border-purple-500/30 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-purple-400 flex items-center">
+                  <Github className="h-5 w-5 mr-2" />
+                  GitHub Integration
+                </CardTitle>
+                <CardDescription>
+                  Backup and sync your Tweet Tracker data to GitHub repository
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="github-username">GitHub Username</Label>
+                      <Input
+                        id="github-username"
+                        placeholder="your-username"
+                        value={githubUsername}
+                        onChange={(e) => setGithubUsername(e.target.value)}
+                        className="bg-slate-700 border-slate-600"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="github-token">GitHub Token</Label>
+                      <Input
+                        id="github-token"
+                        type="password"
+                        placeholder="ghp_xxxxxxxxxxxx"
+                        value={githubToken}
+                        onChange={(e) => setGithubToken(e.target.value)}
+                        className="bg-slate-700 border-slate-600"
+                      />
+                    </div>
+                    <div className="flex items-end space-x-2">
+                      <Button onClick={setupGitHub} className="bg-purple-600 hover:bg-purple-700">
+                        <Github className="h-4 w-4 mr-2" />
+                        Connect
+                      </Button>
+                      <Button onClick={createGitHubBackup} variant="outline" className="border-green-500 text-green-400">
+                        Backup Now
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {githubStats.repository_name && (
+                    <div className="p-3 bg-slate-800/50 rounded-lg">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-400">Repository:</span>
+                        <span className="text-green-400">{githubStats.repository_name}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-400">Total Backups:</span>
+                        <span className="text-blue-400">{githubBackups.length}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Local Version Management */}
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-purple-400">Version Management</CardTitle>
+                <CardTitle className="text-purple-400">Local Version Management</CardTitle>
                 <CardDescription>
                   Save and restore app states with full rollback capability
                 </CardDescription>
@@ -776,10 +839,46 @@ function TweetTracker() {
               <CardContent>
                 <div className="text-center text-slate-500 py-8">
                   <RotateCcw className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>Version history will appear here</p>
+                  <p>Local version history will appear here</p>
                 </div>
               </CardContent>
             </Card>
+
+            {/* GitHub Backups List */}
+            {githubBackups.length > 0 && (
+              <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-green-400">GitHub Backups ({githubBackups.length})</CardTitle>
+                  <CardDescription>
+                    Cloud backups stored in your GitHub repository
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {githubBackups.slice(0, 5).map((backup, index) => (
+                      <div key={index} className="p-3 bg-slate-700/50 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-medium text-green-300">{backup.version}</h4>
+                            <p className="text-xs text-slate-400">
+                              {formatTime(backup.timestamp)} • {(backup.size / 1024).toFixed(1)} KB
+                            </p>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button size="sm" variant="outline" className="border-blue-500 text-blue-400">
+                              Restore
+                            </Button>
+                            <Button size="sm" variant="outline" className="border-red-500 text-red-400">
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
