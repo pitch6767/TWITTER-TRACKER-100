@@ -464,11 +464,11 @@ function TweetTracker() {
               <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center text-orange-400">
-                    <AlertTriangle className="h-5 w-5 mr-2" />
-                    Name Alerts ({nameAlerts.length})
+                    <TrendingUp className="h-5 w-5 mr-2" />
+                    Background Tracking ({alertThresholdConfig} mentions needed)
                   </CardTitle>
                   <CardDescription>
-                    Triggered when {alertThreshold}+ accounts mention same token
+                    Silently tracks mentions → activates CA monitoring for trending tokens
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
