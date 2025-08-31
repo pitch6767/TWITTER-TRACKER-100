@@ -108,7 +108,7 @@ class AppVersion(BaseModel):
 
 class MonitoringConfig(BaseModel):
     alert_threshold: int = 2
-    check_interval_seconds: int = 60
+    check_interval_seconds: int = 30
     enable_browser_monitoring: bool = True
     enable_rss_monitoring: bool = True
     enable_scraping_monitoring: bool = True
