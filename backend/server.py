@@ -453,24 +453,62 @@ async def add_token_mention(mention: TokenMention):
 
 @api_router.post("/monitoring/start")
 async def start_monitoring():
-    """Start automated X account monitoring"""
-    await x_monitor.start_monitoring()
-    return {"message": "X account monitoring started", "accounts_count": len(x_monitor.monitored_accounts)}
+    """Start real-time X account monitoring"""
+    try:
+        # Get all active accounts
+        accounts = await db.x_accounts.find({"is_active": True}).to_list(1000)
+        account_usernames = [acc['username'] for acc in accounts]
+        
+        # Start real-time monitoring in background
+        asyncio.create_task(real_time_monitor.start_monitoring(account_usernames))
+        
+        return {
+            "message": "Real-time X account monitoring started", 
+            "accounts_count": len(account_usernames),
+            "monitoring_type": "real-time_browser_automation",
+            "alert_threshold": real_time_monitor.alert_threshold
+        }
+    except Exception as e:
+        logger.error(f"Error starting monitoring: {e}")
+        return {"error": str(e)}
 
 @api_router.post("/monitoring/stop")
 async def stop_monitoring():
-    """Stop automated X account monitoring"""
-    x_monitor.is_monitoring = False
-    return {"message": "X account monitoring stopped"}
+    """Stop real-time X account monitoring"""
+    await real_time_monitor.stop_monitoring()
+    return {"message": "Real-time X account monitoring stopped"}
 
 @api_router.get("/monitoring/status")
 async def get_monitoring_status():
     """Get current monitoring status"""
     return {
-        "is_monitoring": x_monitor.is_monitoring,
-        "monitored_accounts_count": len(x_monitor.monitored_accounts),
-        "accounts": x_monitor.monitored_accounts
+        "is_monitoring": real_time_monitor.is_monitoring,
+        "monitored_accounts_count": len(real_time_monitor.monitored_accounts),
+        "accounts": real_time_monitor.monitored_accounts,
+        "alert_threshold": real_time_monitor.alert_threshold,
+        "monitoring_type": "real-time_browser_automation",
+        "last_check": real_time_monitor.last_check_time.isoformat() if real_time_monitor.last_check_time else None,
+        "known_tokens_filtered": len(real_time_monitor.known_tokens_with_ca)
     }
+
+@api_router.post("/monitoring/config")
+async def update_monitoring_config(config: MonitoringConfig):
+    """Update monitoring configuration"""
+    global monitoring_config
+    monitoring_config = config
+    
+    # Update real-time monitor settings
+    real_time_monitor.set_alert_threshold(config.alert_threshold)
+    
+    return {
+        "message": "Monitoring configuration updated",
+        "config": config.dict()
+    }
+
+@api_router.get("/monitoring/config")
+async def get_monitoring_config():
+    """Get current monitoring configuration"""
+    return monitoring_config.dict()
 
 @api_router.get("/alerts/names")
 async def get_name_alerts():
