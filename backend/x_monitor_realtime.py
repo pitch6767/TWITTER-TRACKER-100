@@ -28,6 +28,7 @@ class RealTimeXMonitor:
         self.known_tokens_with_ca: Set[str] = set()
         self.token_mentions_cache = {}
         self.last_check_time = datetime.now(timezone.utc) - timedelta(hours=1)
+        self.ca_watchlist: Set[str] = set()  # Active tokens to monitor for CAs
         
         # Advanced token patterns for meme coins
         self.token_patterns = [
