@@ -624,10 +624,10 @@ function TweetTracker() {
               <CardHeader>
                 <CardTitle className="text-green-400 flex items-center">
                   <Zap className="h-5 w-5 mr-2" />
-                  Real-time X Account Monitoring
+                  Auto-Track @Sploofmeme Following List
                 </CardTitle>
                 <CardDescription>
-                  Advanced monitoring with browser automation, RSS feeds, and smart filtering
+                  Automatically monitors ALL accounts @Sploofmeme follows (~1000 accounts) every 30 seconds
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -636,27 +636,31 @@ function TweetTracker() {
                     <div className="space-y-2">
                       <div className="flex items-center space-x-4">
                         <Badge variant={monitoringStatus.is_monitoring ? 'default' : 'secondary'} className="text-sm">
-                          {monitoringStatus.is_monitoring ? '🚀 Real-time Active' : '⏸️ Monitoring Stopped'}
+                          {monitoringStatus.is_monitoring ? '🚀 Auto-Tracking Active' : '⏸️ Auto-Tracking Stopped'}
                         </Badge>
                         <span className="text-sm text-slate-400">
-                          {monitoringStatus.monitored_accounts_count} accounts • Threshold: {monitoringStatus.alert_threshold || 2}
+                          {monitoringStatus.monitored_accounts_count} @Sploofmeme follows • 30s intervals
                         </span>
                       </div>
                       <div className="flex items-center space-x-2 text-xs text-slate-500">
                         <Shield className="h-3 w-3" />
-                        <span>Filters: Old tokens & tokens with CAs ({monitoringStatus.known_tokens_filtered || 0} filtered)</span>
+                        <span>Smart filtering: Old tokens & CAs filtered ({monitoringStatus.known_tokens_filtered || 0})</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-xs text-green-400">
+                        <Users className="h-3 w-3" />
+                        <span>Auto-discovers ALL accounts @Sploofmeme follows (no manual setup)</span>
                       </div>
                     </div>
                     <div className="flex space-x-2">
                       {!monitoringStatus.is_monitoring ? (
                         <Button onClick={startMonitoring} className="bg-green-600 hover:bg-green-700">
                           <Zap className="h-4 w-4 mr-2" />
-                          Start Real-time
+                          Start Auto-Track
                         </Button>
                       ) : (
                         <Button onClick={stopMonitoring} variant="outline" className="border-red-500 text-red-400 hover:bg-red-500/10">
                           <Activity className="h-4 w-4 mr-2" />
-                          Stop Monitoring
+                          Stop Tracking
                         </Button>
                       )}
                     </div>
@@ -665,7 +669,7 @@ function TweetTracker() {
                   {/* Alert Threshold Configuration */}
                   <div className="flex items-center space-x-4 p-3 bg-slate-800/50 rounded-lg">
                     <Filter className="h-4 w-4 text-purple-400" />
-                    <Label htmlFor="threshold" className="text-sm">Alert Threshold:</Label>
+                    <Label htmlFor="threshold" className="text-sm">Alert when</Label>
                     <Input
                       id="threshold"
                       type="number"
@@ -675,7 +679,7 @@ function TweetTracker() {
                       onChange={(e) => setAlertThresholdConfig(parseInt(e.target.value))}
                       className="w-20 bg-slate-700 border-slate-600"
                     />
-                    <span className="text-xs text-slate-400">accounts needed</span>
+                    <span className="text-xs text-slate-400">accounts mention same token</span>
                     <Button onClick={updateAlertThreshold} size="sm" className="bg-purple-600 hover:bg-purple-700">
                       Update
                     </Button>
