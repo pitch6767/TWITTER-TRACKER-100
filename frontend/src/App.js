@@ -35,6 +35,11 @@ function TweetTracker() {
     account_username: '',
     tweet_url: ''
   });
+  const [alertThresholdConfig, setAlertThresholdConfig] = useState(2);
+  const [githubToken, setGithubToken] = useState('');
+  const [githubUsername, setGithubUsername] = useState('');
+  const [githubBackups, setGithubBackups] = useState([]);
+  const [githubStats, setGithubStats] = useState({});
   
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
