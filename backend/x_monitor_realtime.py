@@ -495,6 +495,78 @@ class RealTimeXMonitor:
         except Exception as e:
             logger.error(f"Error processing mentions for alerts: {e}")
             
+    async def activate_ca_monitoring(self, token_name: str, mention_count: int):
+        """Activate intensive CA monitoring for a trending token"""
+        try:
+            # Add to CA monitoring watchlist
+            await self.db.ca_monitoring_queue.insert_one({
+                "token_name": token_name,
+                "mention_count": mention_count,
+                "activated_at": datetime.now(timezone.utc),
+                "status": "active"
+            })
+            
+            logger.info(f"🎯 CA MONITORING ACTIVATED: {token_name} ({mention_count} mentions)")
+            
+        except Exception as e:
+            logger.error(f"Error activating CA monitoring: {e}")
+
+    async def check_for_background_tracking(self, token_name: str):
+        """Background tracking - no alerts, just CA monitoring activation"""
+        try:
+            # Get recent mentions of this token (last hour)
+            from datetime import datetime, timedelta
+            one_hour_ago = datetime.now() - timedelta(hours=1)
+            
+            recent_mentions = await self.db.token_mentions.find({
+                "token_name": {"$regex": f"^{token_name}$", "$options": "i"},
+                "mentioned_at": {"$gte": one_hour_ago},
+                "processed": {"$ne": True}
+            }).to_list(100)
+            
+            # Group by unique accounts
+            unique_accounts = set()
+            
+            for mention in recent_mentions:
+                unique_accounts.add(mention['account_username'])
+                
+            # If threshold met, activate CA monitoring (no visual alert)
+            if len(unique_accounts) >= self.alert_threshold:
+                await self.activate_ca_monitoring(token_name, len(unique_accounts))
+                
+                # Mark mentions as processed
+                await self.db.token_mentions.update_many(
+                    {"token_name": {"$regex": f"^{token_name}$", "$options": "i"}},
+                    {"$set": {"processed": True}}
+                )
+                
+                logger.info(f"🔍 BACKGROUND TRACKING: {token_name} → CA monitoring activated")
+                
+        except Exception as e:
+            logger.error(f"Error in background tracking: {e}")
+
+    async def check_for_trending_ca_alerts(self):
+        """Check for new CAs of tokens that are being monitored"""
+        try:
+            # Get tokens being monitored for CAs
+            monitored_tokens = await self.db.ca_monitoring_queue.find({
+                "status": "active"
+            }).to_list(100)
+            
+            if not monitored_tokens:
+                return
+                
+            # Check Pump.fun for new CAs of these specific tokens
+            for token_data in monitored_tokens:
+                token_name = token_data['token_name']
+                
+                # Here we would check if this token got a new CA
+                # For now, we'll integrate with the existing Pump.fun WebSocket
+                # The WebSocket will check if incoming CAs match monitored tokens
+                
+        except Exception as e:
+            logger.error(f"Error checking trending CA alerts: {e}")
+
     async def stop_monitoring(self):
         """Stop monitoring"""
         self.is_monitoring = False
