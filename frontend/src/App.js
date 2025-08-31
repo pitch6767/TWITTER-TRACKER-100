@@ -505,11 +505,54 @@ function TweetTracker() {
 
           {/* Accounts Tab */}
           <TabsContent value="accounts" className="space-y-6">
+            {/* Automated Monitoring Control */}
+            <Card className="bg-gradient-to-r from-green-900/30 to-blue-900/30 border-green-500/30 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-green-400 flex items-center">
+                  <Activity className="h-5 w-5 mr-2" />
+                  Automated X Account Monitoring
+                </CardTitle>
+                <CardDescription>
+                  Automatically monitor all accounts that @Sploofmeme follows for token mentions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-4">
+                      <Badge variant={monitoringStatus.is_monitoring ? 'default' : 'secondary'} className="text-sm">
+                        {monitoringStatus.is_monitoring ? '🟢 Active Monitoring' : '⏸️ Monitoring Stopped'}
+                      </Badge>
+                      <span className="text-sm text-slate-400">
+                        {monitoringStatus.monitored_accounts_count} accounts being monitored
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      The system automatically checks all followed accounts for token mentions every minute
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    {!monitoringStatus.is_monitoring ? (
+                      <Button onClick={startMonitoring} className="bg-green-600 hover:bg-green-700">
+                        <Activity className="h-4 w-4 mr-2" />
+                        Start Monitoring
+                      </Button>
+                    ) : (
+                      <Button onClick={stopMonitoring} variant="outline" className="border-red-500 text-red-400 hover:bg-red-500/10">
+                        <Activity className="h-4 w-4 mr-2" />
+                        Stop Monitoring
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-blue-400">Add X Account</CardTitle>
                 <CardDescription>
-                  Add X accounts to track for token mentions
+                  Manually add specific X accounts to track (optional - for testing)
                 </CardDescription>
               </CardHeader>
               <CardContent>
