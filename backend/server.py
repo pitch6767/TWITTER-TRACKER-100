@@ -372,7 +372,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 "ca_alerts": ca_alerts[-10:],
                 "tracked_accounts_count": len(tracked_accounts)
             }
-        }))
+        }, cls=DateTimeEncoder))
         
         while True:
             try:
