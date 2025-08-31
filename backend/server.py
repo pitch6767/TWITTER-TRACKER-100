@@ -572,11 +572,13 @@ async def get_monitoring_status():
     return {
         "is_monitoring": real_time_monitor.is_monitoring,
         "monitored_accounts_count": len(real_time_monitor.monitored_accounts),
-        "accounts": real_time_monitor.monitored_accounts,
+        "accounts": real_time_monitor.monitored_accounts[:10],  # Show only first 10 for reference
         "alert_threshold": real_time_monitor.alert_threshold,
-        "monitoring_type": "real-time_browser_automation",
+        "monitoring_type": "sploofmeme_auto_follow_tracking",
         "last_check": real_time_monitor.last_check_time.isoformat() if real_time_monitor.last_check_time else None,
-        "known_tokens_filtered": len(real_time_monitor.known_tokens_with_ca)
+        "known_tokens_filtered": len(real_time_monitor.known_tokens_with_ca),
+        "target_account": "Sploofmeme",
+        "real_following_count": len(real_time_monitor.monitored_accounts)
     }
 
 @api_router.post("/monitoring/config")
