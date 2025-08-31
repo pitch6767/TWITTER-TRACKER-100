@@ -383,7 +383,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     await websocket.send_text(json.dumps({
                         "type": "pong",
                         "timestamp": datetime.now(timezone.utc).isoformat()
-                    }))
+                    }, cls=DateTimeEncoder))
                     
             except Exception as e:
                 logger.error(f"Error processing client message: {e}")
