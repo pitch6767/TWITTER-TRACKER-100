@@ -403,13 +403,37 @@ async def broadcast_to_clients(data: dict):
         for connection in disconnected_clients:
             active_websocket_connections.remove(connection)
 
+async def check_token_has_ca_server(token_name: str) -> bool:
+    """Check if a token already has a Contract Address (server version)"""
+    try:
+        # Check in CA alerts collection
+        ca_exists = await db.ca_alerts.find_one({
+            "token_name": {"$regex": f"^{token_name}$", "$options": "i"}
+        })
+        
+        if ca_exists:
+            logger.info(f"Token {token_name} already has CA - filtering from Name Alerts")
+            return True
+            
+        return False
+        
+    except Exception as e:
+        logger.error(f"Error checking if token has CA: {e}")
+        return False  # If unsure, allow the alert
+
 async def check_name_alerts(token_mentions: List[TokenMention], threshold: int = 2):
-    """Check if token mentions meet alert threshold"""
+    """Check if token mentions meet alert threshold (ONLY for tokens WITHOUT CA)"""
     token_counts = {}
     
     for mention in token_mentions:
         if not mention.processed:
             token_name = mention.token_name.lower()
+            
+            # CRITICAL: Skip tokens that already have CA
+            if await check_token_has_ca_server(mention.token_name):
+                logger.info(f"⚠️ Token {mention.token_name} already has CA - skipping Name Alert")
+                continue
+            
             if token_name not in token_counts:
                 token_counts[token_name] = {
                     'count': 0,
@@ -423,7 +447,12 @@ async def check_name_alerts(token_mentions: List[TokenMention], threshold: int =
             token_counts[token_name]['urls'].append(mention.tweet_url)
             
             if token_counts[token_name]['count'] >= threshold:
-                # Create name alert
+                # Double-check token doesn't have CA before creating alert
+                if await check_token_has_ca_server(mention.token_name):
+                    logger.info(f"⚠️ Token {mention.token_name} got CA during processing - skipping Name Alert")
+                    continue
+                
+                # Create name alert ONLY for tokens without CA
                 name_alert = NameAlert(
                     token_name=mention.token_name,
                     first_seen=token_counts[token_name]['first_seen'],
@@ -434,7 +463,7 @@ async def check_name_alerts(token_mentions: List[TokenMention], threshold: int =
                 )
                 
                 name_alerts.append(name_alert.dict())
-                logger.info(f"Name Alert Triggered: {name_alert.token_name} ({name_alert.quorum_count} mentions)")
+                logger.info(f"🚨 NAME ALERT (NO CA): {name_alert.token_name} ({name_alert.quorum_count} mentions)")
                 
                 # Broadcast to clients
                 await broadcast_to_clients({
