@@ -326,28 +326,94 @@ class RealTimeXMonitor:
                 
         return all_mentions
         
-    async def start_monitoring(self, accounts: List[str]):
-        """Start real-time monitoring of X accounts"""
+    async def get_sploofmeme_following_list(self) -> List[str]:
+        """Get all accounts that @Sploofmeme follows"""
+        following_accounts = []
         try:
-            self.monitored_accounts = accounts
+            # Navigate to Sploofmeme's following page
+            url = "https://x.com/Sploofmeme/following"
+            await self.page.goto(url, wait_until="networkidle", timeout=30000)
+            
+            # Wait for the page to load
+            await self.page.wait_for_timeout(3000)
+            
+            # Scroll and collect following accounts
+            for scroll_count in range(20):  # Scroll multiple times to load more accounts
+                try:
+                    # Extract usernames from current view
+                    usernames = await self.page.evaluate("""
+                        () => {
+                            const usernames = [];
+                            const userElements = document.querySelectorAll('[data-testid="UserCell"] [href^="/"]');
+                            
+                            for (let element of userElements) {
+                                const href = element.getAttribute('href');
+                                if (href && href.startsWith('/') && !href.includes('/status/')) {
+                                    const username = href.substring(1);
+                                    if (username && !usernames.includes(username)) {
+                                        usernames.push(username);
+                                    }
+                                }
+                            }
+                            return usernames;
+                        }
+                    """)
+                    
+                    # Add new usernames to our list
+                    for username in usernames:
+                        if username not in following_accounts and username != 'Sploofmeme':
+                            following_accounts.append(username)
+                    
+                    # Scroll down to load more
+                    await self.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+                    await self.page.wait_for_timeout(2000)
+                    
+                    # Stop if we haven't found new accounts in the last few scrolls
+                    if len(following_accounts) > 50 and scroll_count > 10:
+                        break
+                        
+                except Exception as e:
+                    logger.error(f"Error during scroll {scroll_count}: {e}")
+                    break
+                    
+            logger.info(f"Found {len(following_accounts)} accounts that @Sploofmeme follows")
+            return following_accounts[:1000]  # Limit to 1000 accounts for performance
+            
+        except Exception as e:
+            logger.error(f"Error getting Sploofmeme's following list: {e}")
+            return []
+
+    async def start_monitoring(self, target_account: str = "Sploofmeme"):
+        """Start real-time monitoring of all accounts that target_account follows"""
+        try:
             self.is_monitoring = True
             
             # Initialize browser
             await self.initialize_browser()
             
+            # Get all accounts that Sploofmeme follows
+            logger.info(f"Getting all accounts that @{target_account} follows...")
+            following_accounts = await self.get_sploofmeme_following_list()
+            
+            if not following_accounts:
+                logger.warning("No following accounts found, using fallback accounts")
+                following_accounts = ["elonmusk", "VitalikButerin", "cz_binance", "justinsuntron"]
+            
+            self.monitored_accounts = following_accounts
+            
             # Load known tokens with CAs
             await self.load_known_tokens_with_ca()
             
-            logger.info(f"Started real-time monitoring of {len(accounts)} accounts")
+            logger.info(f"Started real-time monitoring of {len(following_accounts)} accounts that @{target_account} follows")
             
-            # Start monitoring loop
+            # Start monitoring loop with 30-second intervals
             while self.is_monitoring:
                 try:
                     await self.monitoring_cycle()
-                    await asyncio.sleep(60)  # Check every minute
+                    await asyncio.sleep(30)  # Check every 30 seconds for faster detection
                 except Exception as e:
                     logger.error(f"Error in monitoring cycle: {e}")
-                    await asyncio.sleep(30)
+                    await asyncio.sleep(15)
                     
         except Exception as e:
             logger.error(f"Error starting monitoring: {e}")
