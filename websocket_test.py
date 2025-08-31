@@ -15,7 +15,7 @@ class WebSocketTester:
         try:
             print(f"🔌 Connecting to WebSocket: {self.ws_url}")
             
-            async with websockets.connect(self.ws_url, timeout=10) as websocket:
+            async with websockets.connect(self.ws_url) as websocket:
                 self.connection_established = True
                 print("✅ WebSocket connection established")
                 
