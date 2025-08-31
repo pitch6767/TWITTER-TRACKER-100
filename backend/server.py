@@ -419,16 +419,35 @@ async def remove_tracked_account(account_id: str):
 
 @api_router.post("/mentions")
 async def add_token_mention(mention: TokenMention):
-    """Add token mention from X account (manual input for now)"""
+    """Add token mention from X account (manual input for testing)"""
     mention_dict = mention.dict()
     await db.token_mentions.insert_one(mention_dict)
     
-    # Check for name alerts
-    all_mentions = await db.token_mentions.find({"processed": False}).to_list(1000)
-    mentions_objects = [TokenMention(**m) for m in all_mentions]
-    await check_name_alerts(mentions_objects)
+    # Use X monitor to process the mention
+    await x_monitor.process_token_mention(mention)
     
     return {"message": "Token mention added successfully"}
+
+@api_router.post("/monitoring/start")
+async def start_monitoring():
+    """Start automated X account monitoring"""
+    await x_monitor.start_monitoring()
+    return {"message": "X account monitoring started", "accounts_count": len(x_monitor.monitored_accounts)}
+
+@api_router.post("/monitoring/stop")
+async def stop_monitoring():
+    """Stop automated X account monitoring"""
+    x_monitor.is_monitoring = False
+    return {"message": "X account monitoring stopped"}
+
+@api_router.get("/monitoring/status")
+async def get_monitoring_status():
+    """Get current monitoring status"""
+    return {
+        "is_monitoring": x_monitor.is_monitoring,
+        "monitored_accounts_count": len(x_monitor.monitored_accounts),
+        "accounts": x_monitor.monitored_accounts
+    }
 
 @api_router.get("/alerts/names")
 async def get_name_alerts():
