@@ -297,7 +297,7 @@ function TweetTracker() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           alert_threshold: alertThresholdConfig,
-          check_interval_seconds: 60,
+          check_interval_seconds: 30,
           enable_browser_monitoring: true,
           enable_rss_monitoring: true,
           enable_scraping_monitoring: true,
