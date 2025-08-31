@@ -290,6 +290,108 @@ function TweetTracker() {
     }
   };
 
+  const updateAlertThreshold = async () => {
+    try {
+      const response = await fetch(`${API}/monitoring/config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          alert_threshold: alertThresholdConfig,
+          check_interval_seconds: 60,
+          enable_browser_monitoring: true,
+          enable_rss_monitoring: true,
+          enable_scraping_monitoring: true,
+          filter_old_tokens: true,
+          filter_tokens_with_ca: true
+        })
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "⚙️ Settings Updated",
+          description: `Alert threshold set to ${alertThresholdConfig} accounts`,
+        });
+      }
+    } catch (error) {
+      console.error('Error updating config:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update settings",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const setupGitHub = async () => {
+    if (!githubToken.trim() || !githubUsername.trim()) return;
+    
+    try {
+      const response = await fetch(`${API}/github/setup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          github_token: githubToken,
+          username: githubUsername
+        })
+      });
+      
+      const result = await response.json();
+      if (result.repository) {
+        toast({
+          title: "🎉 GitHub Connected!",
+          description: `Repository: ${result.repository}`,
+        });
+        fetchInitialData(); // Refresh to get backups
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to setup GitHub",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error setting up GitHub:', error);
+      toast({
+        title: "Error",
+        description: "Failed to connect to GitHub",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const createGitHubBackup = async () => {
+    try {
+      const version_tag = `backup_${new Date().toISOString().split('T')[0]}`;
+      const response = await fetch(`${API}/github/backup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ version_tag })
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        toast({
+          title: "☁️ GitHub Backup Created!",
+          description: `Backup saved to GitHub repository`,
+        });
+        fetchInitialData(); // Refresh backups
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to create GitHub backup",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error creating GitHub backup:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create GitHub backup",
+        variant: "destructive"
+      });
+    }
+  };
+
   const formatTime = (timestamp) => {
     return new Date(timestamp).toLocaleString();
   };
