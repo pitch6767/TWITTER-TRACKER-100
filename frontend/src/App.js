@@ -545,54 +545,7 @@ function TweetTracker() {
               </CardContent>
             </Card>
 
-            {/* Manual Token Mention Input */}
-            <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-purple-400">Add Token Mention (Manual Input)</CardTitle>
-                <CardDescription>
-                  Manually add token mentions from X accounts for testing
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <Label htmlFor="token-name">Token Name</Label>
-                    <Input
-                      id="token-name"
-                      placeholder="e.g., DOGE, PEPE"
-                      value={tokenMention.token_name}
-                      onChange={(e) => setTokenMention(prev => ({ ...prev, token_name: e.target.value }))}
-                      className="bg-slate-700 border-slate-600"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="account-username">Account Username</Label>
-                    <Input
-                      id="account-username"
-                      placeholder="@username"
-                      value={tokenMention.account_username}
-                      onChange={(e) => setTokenMention(prev => ({ ...prev, account_username: e.target.value }))}
-                      className="bg-slate-700 border-slate-600"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="tweet-url">Tweet URL</Label>
-                    <Input
-                      id="tweet-url"
-                      placeholder="https://x.com/..."
-                      value={tokenMention.tweet_url}
-                      onChange={(e) => setTokenMention(prev => ({ ...prev, tweet_url: e.target.value }))}
-                      className="bg-slate-700 border-slate-600"
-                    />
-                  </div>
-                  <div className="flex items-end">
-                    <Button onClick={addTokenMention} className="w-full bg-purple-600 hover:bg-purple-700">
-                      Add Mention
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+
           </TabsContent>
 
           {/* Accounts Tab */}
