@@ -785,6 +785,18 @@ function TweetTracker() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
+                  {/* GitHub Token Setup Instructions */}
+                  <div className="p-3 bg-slate-800/50 rounded-lg border border-blue-500/30">
+                    <h4 className="text-sm font-medium text-blue-400 mb-2">How to get GitHub Token:</h4>
+                    <ol className="text-xs text-slate-400 space-y-1">
+                      <li>1. Go to GitHub.com → Settings → Developer settings</li>
+                      <li>2. Click "Personal access tokens" → "Tokens (classic)"</li>
+                      <li>3. Click "Generate new token (classic)"</li>
+                      <li>4. Select "repo" scope (full control of private repositories)</li>
+                      <li>5. Copy the token (starts with "ghp_") and paste below</li>
+                    </ol>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="github-username">GitHub Username</Label>
@@ -797,7 +809,7 @@ function TweetTracker() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="github-token">GitHub Token</Label>
+                      <Label htmlFor="github-token">GitHub Token (ghp_xxx...)</Label>
                       <Input
                         id="github-token"
                         type="password"
@@ -812,16 +824,18 @@ function TweetTracker() {
                         <Github className="h-4 w-4 mr-2" />
                         Connect
                       </Button>
-                      <Button onClick={createGitHubBackup} variant="outline" className="border-green-500 text-green-400">
-                        Backup Now
-                      </Button>
+                      {githubStats.repository_name && (
+                        <Button onClick={createGitHubBackup} variant="outline" className="border-green-500 text-green-400">
+                          Backup Now
+                        </Button>
+                      )}
                     </div>
                   </div>
                   
                   {githubStats.repository_name && (
-                    <div className="p-3 bg-slate-800/50 rounded-lg">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-400">Repository:</span>
+                    <div className="p-3 bg-slate-800/50 rounded-lg border border-green-500/30">
+                      <div className="flex items-center justify-between text-sm mb-1">
+                        <span className="text-slate-400">✅ Connected Repository:</span>
                         <span className="text-green-400">{githubStats.repository_name}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
