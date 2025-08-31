@@ -314,6 +314,9 @@ function TweetTracker() {
             <Badge variant={connectionStatus === 'connected' ? 'default' : 'destructive'}>
               {connectionStatus === 'connected' ? '🟢 Live' : '🔴 Offline'}
             </Badge>
+            <Badge variant={monitoringStatus.is_monitoring ? 'default' : 'secondary'}>
+              {monitoringStatus.is_monitoring ? '👁️ Monitoring' : '⏸️ Stopped'}
+            </Badge>
             <Button onClick={saveVersion} className="bg-purple-600 hover:bg-purple-700">
               <Save className="h-4 w-4 mr-2" />
               Save Version
