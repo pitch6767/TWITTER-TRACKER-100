@@ -790,7 +790,7 @@ function TweetTracker() {
                       <Label htmlFor="github-username">GitHub Username</Label>
                       <Input
                         id="github-username"
-                        placeholder="your-username"
+                        placeholder="pitch6767"
                         value={githubUsername}
                         onChange={(e) => setGithubUsername(e.target.value)}
                         className="bg-slate-700 border-slate-600"
