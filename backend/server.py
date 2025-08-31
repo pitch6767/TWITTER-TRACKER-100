@@ -104,6 +104,142 @@ class AppVersion(BaseModel):
     tag_name: Optional[str] = None
     snapshot_data: Dict[str, Any]
 
+class XAccountMonitor:
+    def __init__(self):
+        self.monitored_accounts = []
+        self.is_monitoring = False
+        self.token_patterns = [
+            r'\$[A-Z]{2,10}\b',  # $TOKEN format
+            r'\b[A-Z]{2,10}(?:\s+(?:coin|token|gem|moon|pump|lambo))\b',  # TOKEN coin/token
+            r'\b(?:DOGE|PEPE|SHIB|BONK|WIF|FLOKI|MEME|APE|WOJAK|TURBO|BRETT|POPCAT|DEGEN|MEW|BOBO|PEPE2|LADYS|BABYDOGE|DOGELON|AKITA|KISHU|SAFEMOON|HOGE|NFD|ELON|MILADY|BEN|ANDY|BART|MATT|TOSHI|HOPPY|MUMU|BENJI|POKEMON|SPURDO|BODEN|MAGA|SLERF|BOOK|MYRO|PONKE)\b',  # Common meme coins
+        ]
+        
+    async def start_monitoring(self):
+        """Start monitoring X accounts for token mentions"""
+        self.is_monitoring = True
+        logger.info("Starting X account monitoring...")
+        
+        # Get all active tracked accounts
+        accounts = await db.x_accounts.find({"is_active": True}).to_list(1000)
+        self.monitored_accounts = [acc['username'] for acc in accounts]
+        
+        logger.info(f"Monitoring {len(self.monitored_accounts)} X accounts")
+        
+        # Start monitoring loop
+        asyncio.create_task(self.monitoring_loop())
+        
+    async def monitoring_loop(self):
+        """Main monitoring loop that checks accounts periodically"""
+        while self.is_monitoring:
+            try:
+                await self.check_accounts_for_mentions()
+                await asyncio.sleep(60)  # Check every minute
+                
+            except Exception as e:
+                logger.error(f"Error in monitoring loop: {e}")
+                await asyncio.sleep(30)
+                
+    async def check_accounts_for_mentions(self):
+        """Check tracked accounts for new token mentions"""
+        try:
+            # Simulate checking X accounts (replace with actual implementation)
+            for account in self.monitored_accounts:
+                # For now, simulate finding token mentions
+                await self.simulate_account_check(account)
+                
+        except Exception as e:
+            logger.error(f"Error checking accounts: {e}")
+            
+    async def simulate_account_check(self, account_username):
+        """Simulate checking an X account for token mentions"""
+        # This simulates finding token mentions from the account
+        # In a real implementation, this would scrape or use alternative APIs
+        
+        # Randomly simulate finding tokens (for demonstration)
+        if random.random() < 0.1:  # 10% chance of finding a mention
+            possible_tokens = ['BONK', 'PEPE', 'DOGE', 'WIF', 'BRETT', 'POPCAT', 'MEW', 'TURBO']
+            token_name = random.choice(possible_tokens)
+            
+            # Create a simulated tweet URL
+            tweet_url = f"https://x.com/{account_username}/status/{random.randint(1000000000000000000, 9999999999999999999)}"
+            
+            # Add the token mention
+            mention = TokenMention(
+                token_name=token_name,
+                account_username=account_username,
+                tweet_url=tweet_url
+            )
+            
+            await self.process_token_mention(mention)
+            
+    async def process_token_mention(self, mention: TokenMention):
+        """Process a found token mention"""
+        try:
+            # Store in database
+            mention_dict = mention.dict()
+            await db.token_mentions.insert_one(mention_dict)
+            
+            logger.info(f"Found token mention: {mention.token_name} by @{mention.account_username}")
+            
+            # Check for name alerts
+            await self.check_for_name_alerts(mention.token_name)
+            
+        except Exception as e:
+            logger.error(f"Error processing token mention: {e}")
+            
+    async def check_for_name_alerts(self, token_name: str):
+        """Check if this token mention should trigger a name alert"""
+        try:
+            # Get recent mentions of this token (last hour)
+            from datetime import datetime, timedelta
+            one_hour_ago = datetime.now() - timedelta(hours=1)
+            
+            recent_mentions = await db.token_mentions.find({
+                "token_name": {"$regex": f"^{token_name}$", "$options": "i"},
+                "mentioned_at": {"$gte": one_hour_ago},
+                "processed": {"$ne": True}
+            }).to_list(100)
+            
+            # Group by unique accounts
+            unique_accounts = set()
+            tweet_urls = []
+            
+            for mention in recent_mentions:
+                unique_accounts.add(mention['account_username'])
+                tweet_urls.append(mention['tweet_url'])
+                
+            # If 2+ unique accounts mentioned this token, create alert
+            if len(unique_accounts) >= 2:
+                name_alert = NameAlert(
+                    token_name=token_name,
+                    first_seen=min(mention['mentioned_at'] for mention in recent_mentions),
+                    quorum_count=len(unique_accounts),
+                    accounts_mentioned=list(unique_accounts),
+                    tweet_urls=tweet_urls,
+                    alert_triggered=True
+                )
+                
+                # Store alert
+                alert_dict = name_alert.dict()
+                name_alerts.append(alert_dict)
+                
+                logger.info(f"🚨 NAME ALERT: {token_name} mentioned by {len(unique_accounts)} accounts")
+                
+                # Broadcast to clients
+                await broadcast_to_clients({
+                    "type": "name_alert",
+                    "data": alert_dict
+                })
+                
+                # Mark mentions as processed
+                await db.token_mentions.update_many(
+                    {"token_name": {"$regex": f"^{token_name}$", "$options": "i"}},
+                    {"$set": {"processed": True}}
+                )
+                
+        except Exception as e:
+            logger.error(f"Error checking for name alerts: {e}")
+
 class PumpFunWebSocketClient:
     def __init__(self):
         self.websocket_url = "wss://pumpportal.fun/api/data"
