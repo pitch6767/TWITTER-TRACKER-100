@@ -682,15 +682,24 @@ function TweetTracker() {
               <CardContent>
                 <div className="space-y-4">
                   {/* GitHub Token Setup Instructions */}
-                  <div className="p-3 bg-slate-800/50 rounded-lg border border-blue-500/30">
-                    <h4 className="text-sm font-medium text-blue-400 mb-2">How to get GitHub Token:</h4>
-                    <ol className="text-xs text-slate-400 space-y-1">
-                      <li>1. Go to GitHub.com → Settings → Developer settings</li>
-                      <li>2. Click "Personal access tokens" → "Tokens (classic)"</li>
-                      <li>3. Click "Generate new token (classic)"</li>
-                      <li>4. Select "repo" scope (full control of private repositories)</li>
-                      <li>5. Copy the token (starts with "ghp_") and paste below</li>
-                    </ol>
+                  <div className="p-4 bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-lg border border-blue-500/30">
+                    <h4 className="text-sm font-medium text-blue-400 mb-3">⚠️ IMPORTANT: This is NOT your GitHub password!</h4>
+                    <div className="space-y-3">
+                      <div className="bg-yellow-900/20 p-3 rounded border border-yellow-500/30">
+                        <p className="text-xs text-yellow-400 font-medium">📋 Step-by-step token creation:</p>
+                        <ol className="text-xs text-slate-300 mt-2 space-y-1 list-decimal list-inside">
+                          <li>Go to <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">github.com/settings/tokens</a></li>
+                          <li>Click "Generate new token" → "Generate new token (classic)"</li>
+                          <li>Name: "Tweet Tracker Backup"</li>
+                          <li>✅ Check "repo" (Full control of private repositories)</li>
+                          <li>Click "Generate token"</li>
+                          <li>Copy the token (starts with "ghp_") - you won't see it again!</li>
+                        </ol>
+                      </div>
+                      <div className="bg-red-900/20 p-3 rounded border border-red-500/30">
+                        <p className="text-xs text-red-400">🔒 Security: Never share this token. It gives access to your repositories.</p>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
