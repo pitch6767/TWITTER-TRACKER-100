@@ -106,6 +106,21 @@ class AppVersion(BaseModel):
     tag_name: Optional[str] = None
     snapshot_data: Dict[str, Any]
 
+class MonitoringConfig(BaseModel):
+    alert_threshold: int = 2
+    check_interval_seconds: int = 60
+    enable_browser_monitoring: bool = True
+    enable_rss_monitoring: bool = True
+    enable_scraping_monitoring: bool = True
+    filter_old_tokens: bool = True
+    filter_tokens_with_ca: bool = True
+
+class GitHubConfig(BaseModel):
+    github_token: Optional[str] = None
+    repository_name: str = "tweet-tracker-backups"
+    auto_backup_enabled: bool = False
+    backup_interval_hours: int = 24
+
 class XAccountMonitor:
     def __init__(self):
         self.monitored_accounts = []
