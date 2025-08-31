@@ -350,31 +350,59 @@ class PumpFunWebSocketClient:
             self.is_connected = False
             
     async def process_pump_message(self, message_data: dict):
-        """Process Pump.fun messages and create CA alerts"""
+        """Process Pump.fun messages and create CA alerts for trending tokens"""
         try:
             if message_data.get('type') == 'tokenCreate':
                 token_data = message_data.get('data', {})
+                token_name = token_data.get('name', 'Unknown').upper()
                 
                 # Check if token is less than 1 minute old
                 created_time = datetime.now(timezone.utc)
                 time_diff = (datetime.now(timezone.utc) - created_time).total_seconds()
                 
                 if time_diff <= 60:  # Less than 1 minute old
+                    # Check if this token is being monitored (was trending)
+                    monitored_token = await db.ca_monitoring_queue.find_one({
+                        "token_name": {"$regex": f"^{token_name}$", "$options": "i"},
+                        "status": "active"
+                    })
+                    
                     ca_alert = CAAlert(
                         contract_address=token_data.get('mint', ''),
-                        token_name=token_data.get('name', 'Unknown'),
+                        token_name=token_name,
                         market_cap=token_data.get('marketCap', 0),
-                        photon_url=f"https://photon-sol.tinyastro.io/en/lp/{token_data.get('mint', '')}",
+                        photon_url=f"https://photon-sol.tinyastro.io/en/lp/{token_data.get('mint', '')}?timeframe=1s",
                         alert_time_utc=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
                     )
                     
-                    ca_alerts.append(ca_alert.dict())
-                    logger.info(f"New CA Alert: {ca_alert.token_name} - {ca_alert.contract_address}")
+                    # Enhanced alert data for trending tokens
+                    alert_data = ca_alert.dict()
+                    if monitored_token:
+                        alert_data['was_trending'] = True
+                        alert_data['mention_count'] = monitored_token.get('mention_count', 0)
+                        alert_data['priority'] = 'HIGH'
+                        
+                        # Mark as processed in monitoring queue
+                        await db.ca_monitoring_queue.update_one(
+                            {"_id": monitored_token["_id"]},
+                            {"$set": {"status": "ca_found", "ca_found_at": datetime.now(timezone.utc)}}
+                        )
+                        
+                        logger.info(f"🚨🚀 TRENDING CA ALERT: {token_name} - {ca_alert.contract_address} (was mentioned by {monitored_token.get('mention_count', 0)} accounts)")
+                    else:
+                        alert_data['was_trending'] = False
+                        alert_data['priority'] = 'NORMAL'
+                        logger.info(f"🚨 CA ALERT: {token_name} - {ca_alert.contract_address}")
+                    
+                    ca_alerts.append(alert_data)
+                    
+                    # Store in database
+                    await db.ca_alerts.insert_one(alert_data)
                     
                     # Broadcast to connected clients
                     await broadcast_to_clients({
                         "type": "ca_alert",
-                        "data": ca_alert.dict()
+                        "data": alert_data
                     })
                     
         except Exception as e:
