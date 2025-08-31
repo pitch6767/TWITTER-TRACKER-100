@@ -224,6 +224,62 @@ function TweetTracker() {
     }
   };
 
+  const startMonitoring = async () => {
+    try {
+      const response = await fetch(`${API}/monitoring/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        setMonitoringStatus(prev => ({
+          ...prev,
+          is_monitoring: true,
+          monitored_accounts_count: result.accounts_count
+        }));
+        toast({
+          title: "🚀 Monitoring Started!",
+          description: `Now monitoring ${result.accounts_count} X accounts automatically`,
+        });
+      }
+    } catch (error) {
+      console.error('Error starting monitoring:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start monitoring",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const stopMonitoring = async () => {
+    try {
+      const response = await fetch(`${API}/monitoring/stop`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        setMonitoringStatus(prev => ({
+          ...prev,
+          is_monitoring: false
+        }));
+        toast({
+          title: "⏹️ Monitoring Stopped",
+          description: "Automatic X account monitoring has been stopped",
+        });
+      }
+    } catch (error) {
+      console.error('Error stopping monitoring:', error);
+      toast({
+        title: "Error",
+        description: "Failed to stop monitoring",
+        variant: "destructive"
+      });
+    }
+  };
+
   const formatTime = (timestamp) => {
     return new Date(timestamp).toLocaleString();
   };
