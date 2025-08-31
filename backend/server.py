@@ -667,17 +667,21 @@ async def load_version(version_id: str):
     return {"message": "Version loaded successfully", "version": version}
 
 # GitHub Integration Endpoints
+class GitHubSetupRequest(BaseModel):
+    github_token: str
+    username: str
+
 @api_router.post("/github/setup")
-async def setup_github_integration(github_token: str, username: str):
+async def setup_github_integration(request: GitHubSetupRequest):
     """Setup GitHub integration with user token"""
     try:
         global github_integration, github_config
-        github_config.github_token = github_token
-        github_integration = GitHubIntegration(github_token)
+        github_config.github_token = request.github_token
+        github_integration = GitHubIntegration(request.github_token)
         
-        success = await github_integration.initialize_repository(username)
+        success = await github_integration.initialize_repository(request.username)
         if success:
-            return {"message": "GitHub integration setup successfully", "repository": f"{username}/tweet-tracker-backups"}
+            return {"message": "GitHub integration setup successfully", "repository": f"{request.username}/tweet-tracker-backups"}
         else:
             return {"error": "Failed to setup GitHub integration"}
     except Exception as e:
