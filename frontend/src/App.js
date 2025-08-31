@@ -621,63 +621,28 @@ function TweetTracker() {
 
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-blue-400">Add X Account</CardTitle>
+                <CardTitle className="text-blue-400">@Sploofmeme Following Status</CardTitle>
                 <CardDescription>
-                  Manually add specific X accounts to track (optional - for testing)
+                  Real-time count of accounts being monitored from @Sploofmeme's following list
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                      id="username"
-                      placeholder="@username"
-                      value={newAccountUsername}
-                      onChange={(e) => setNewAccountUsername(e.target.value)}
-                      className="bg-slate-700 border-slate-600"
-                    />
+                <div className="text-center py-8">
+                  <div className="text-6xl font-bold text-green-400 mb-4">
+                    {monitoringStatus.monitored_accounts_count || 0}
                   </div>
-                  <div>
-                    <Label htmlFor="display-name">Display Name</Label>
-                    <Input
-                      id="display-name"
-                      placeholder="Display Name"
-                      value={newAccountDisplayName}
-                      onChange={(e) => setNewAccountDisplayName(e.target.value)}
-                      className="bg-slate-700 border-slate-600"
-                    />
+                  <p className="text-xl text-slate-300 mb-2">X Accounts Monitored</p>
+                  <p className="text-sm text-slate-500 mb-4">
+                    Automatically synced from @Sploofmeme's following list
+                  </p>
+                  <div className="bg-slate-700/50 p-4 rounded-lg">
+                    <p className="text-xs text-slate-400 mb-2">
+                      💡 To add/remove accounts: Follow or unfollow them on @Sploofmeme's X account
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      System will automatically detect changes on next monitoring cycle
+                    </p>
                   </div>
-                  <div className="flex items-end">
-                    <Button onClick={addTrackedAccount} className="w-full bg-blue-600 hover:bg-blue-700">
-                      <Users className="h-4 w-4 mr-2" />
-                      Add Account
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle>Tracked Accounts ({trackedAccounts.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {trackedAccounts.map((account, index) => (
-                    <div key={account.id || index} className="p-4 bg-slate-700/50 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold">@{account.username}</h3>
-                        <Badge variant={account.is_active ? 'default' : 'secondary'}>
-                          {account.is_active ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-slate-400">{account.display_name}</p>
-                      <div className="text-xs text-slate-500 mt-2">
-                        Added: {formatTime(account.created_at)}
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </CardContent>
             </Card>
