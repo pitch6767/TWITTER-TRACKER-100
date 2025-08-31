@@ -459,99 +459,91 @@ function TweetTracker() {
 
           {/* Alerts Tab */}
           <TabsContent value="alerts" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Name Alerts Window */}
-              <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-orange-400">
-                    <TrendingUp className="h-5 w-5 mr-2" />
-                    Background Tracking ({alertThresholdConfig} mentions needed)
-                  </CardTitle>
-                  <CardDescription>
-                    Silently tracks mentions → activates CA monitoring for trending tokens
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
-                    <div className="text-center text-slate-500 py-8">
-                      <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <div className="space-y-2">
-                        <p className="font-medium">Background Name Tracking Active</p>
-                        <p className="text-xs">Silently monitoring token mentions...</p>
-                        <p className="text-xs text-purple-400">CA alerts will appear when trending tokens get new contracts</p>
+            {/* CA Alerts - Full Width Trading Window */}
+            <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center text-green-400">
+                  <TrendingUp className="h-5 w-5 mr-2" />
+                  CA Alerts ({caAlerts.length}) • Trending Token Launches
+                </CardTitle>
+                <CardDescription>
+                  New contract addresses from trending tokens (&lt;1 min old) • Background tracking: {alertThresholdConfig} mentions needed
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {caAlerts.length > 0 ? caAlerts.map((alert, index) => (
+                    <div key={alert.id || index} className="p-4 bg-slate-700/50 rounded-lg border-l-4 border-green-500 relative">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-semibold text-green-300">{alert.token_name}</h3>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline" className="text-green-400 border-green-400">
+                            <DollarSign className="h-3 w-3 mr-1" />
+                            {formatCurrency(alert.market_cap)}
+                          </Badge>
+                          <Badge variant="outline" className="text-yellow-400 border-yellow-400 animate-pulse">
+                            🚀 TRENDING
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="text-sm text-slate-400 space-y-2">
+                        <div className="flex items-center">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {alert.alert_time_utc} • Less than 1 minute old
+                        </div>
+                        <div className="font-mono text-xs bg-slate-800 p-2 rounded">
+                          CA: {alert.contract_address}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <a
+                            href={`https://photon-sol.tinyastro.io/en/lp/${alert.contract_address}?timeframe=1s`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-4 py-2 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-lg"
+                          >
+                            <TrendingUp className="h-4 w-4 mr-2" />
+                            📈 1s Chart • TRADE NOW
+                          </a>
+                          <button
+                            onClick={() => navigator.clipboard.writeText(alert.contract_address)}
+                            className="inline-flex items-center bg-slate-600 hover:bg-slate-700 px-3 py-2 rounded-lg text-xs transition-colors"
+                          >
+                            📋 Copy CA
+                          </button>
+                          <a
+                            href={`https://dexscreener.com/solana/${alert.contract_address}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center bg-orange-600 hover:bg-orange-700 px-3 py-2 rounded-lg text-xs transition-colors"
+                          >
+                            📊 DexScreener
+                          </a>
+                        </div>
+                        <div className="text-xs text-yellow-400 bg-yellow-900/20 p-2 rounded border border-yellow-500/30">
+                          ⚡ This token was mentioned by multiple accounts before getting CA - High priority trading opportunity!
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* CA Alerts Window */}
-              <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-green-400">
-                    <TrendingUp className="h-5 w-5 mr-2" />
-                    CA Alerts ({caAlerts.length})
-                  </CardTitle>
-                  <CardDescription>
-                    New contract addresses from Pump.fun (&lt;1 min old)
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {caAlerts.length > 0 ? caAlerts.map((alert, index) => (
-                      <div key={alert.id || index} className="p-4 bg-slate-700/50 rounded-lg border-l-4 border-green-500 relative">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-semibold text-green-300">{alert.token_name}</h3>
-                          <div className="flex items-center space-x-2">
-                            <Badge variant="outline" className="text-green-400 border-green-400">
-                              <DollarSign className="h-3 w-3 mr-1" />
-                              {formatCurrency(alert.market_cap)}
-                            </Badge>
-                            <Badge variant="outline" className="text-yellow-400 border-yellow-400 animate-pulse">
-                              🚀 TRENDING
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="text-sm text-slate-400 space-y-2">
-                          <div className="flex items-center">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {alert.alert_time_utc} • Less than 1 minute old
-                          </div>
-                          <div className="font-mono text-xs bg-slate-800 p-2 rounded">
-                            CA: {alert.contract_address}
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <a
-                              href={`https://photon-sol.tinyastro.io/en/lp/${alert.contract_address}?timeframe=1s`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-4 py-2 rounded-lg text-sm font-medium transition-all transform hover:scale-105 shadow-lg"
-                            >
-                              <TrendingUp className="h-4 w-4 mr-2" />
-                              📈 1s Chart • TRADE NOW
-                            </a>
-                            <button
-                              onClick={() => navigator.clipboard.writeText(alert.contract_address)}
-                              className="inline-flex items-center bg-slate-600 hover:bg-slate-700 px-3 py-2 rounded-lg text-xs transition-colors"
-                            >
-                              📋 Copy CA
-                            </button>
-                          </div>
-                          <div className="text-xs text-yellow-400 bg-yellow-900/20 p-2 rounded border border-yellow-500/30">
-                            ⚡ Trending token alert: This token was mentioned by multiple accounts before getting CA!
-                          </div>
+                  )) : (
+                    <div className="text-center text-slate-500 py-12">
+                      <TrendingUp className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                      <div className="space-y-2">
+                        <p className="text-lg font-medium">🎯 Waiting for Trending Token Launches</p>
+                        <p className="text-sm">Background system is monitoring @Sploofmeme follows...</p>
+                        <p className="text-xs text-green-400">CA alerts will appear when trending tokens get new contracts &lt;1 min old</p>
+                        <div className="mt-4 p-3 bg-slate-800/50 rounded-lg border border-green-500/30">
+                          <p className="text-xs text-slate-400">
+                            🔍 Active: {monitoringStatus.monitored_accounts_count} accounts • 
+                            ⚙️ Threshold: {alertThresholdConfig} mentions • 
+                            ⚡ Check: Every 30s
+                          </p>
                         </div>
                       </div>
-                    )) : (
-                      <div className="text-center text-slate-500 py-8">
-                        <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                        <p>No CA alerts yet</p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Manual Token Mention Input */}
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
