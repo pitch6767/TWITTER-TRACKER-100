@@ -453,20 +453,17 @@ async def add_token_mention(mention: TokenMention):
 
 @api_router.post("/monitoring/start")
 async def start_monitoring():
-    """Start real-time X account monitoring"""
+    """Start real-time X account monitoring of all @Sploofmeme follows"""
     try:
-        # Get all active accounts
-        accounts = await db.x_accounts.find({"is_active": True}).to_list(1000)
-        account_usernames = [acc['username'] for acc in accounts]
-        
-        # Start real-time monitoring in background
-        asyncio.create_task(real_time_monitor.start_monitoring(account_usernames))
+        # Start real-time monitoring of all accounts @Sploofmeme follows
+        asyncio.create_task(real_time_monitor.start_monitoring("Sploofmeme"))
         
         return {
-            "message": "Real-time X account monitoring started", 
-            "accounts_count": len(account_usernames),
-            "monitoring_type": "real-time_browser_automation",
-            "alert_threshold": real_time_monitor.alert_threshold
+            "message": "Real-time monitoring started - tracking ALL accounts @Sploofmeme follows", 
+            "monitoring_type": "auto_follow_tracking",
+            "alert_threshold": real_time_monitor.alert_threshold,
+            "check_interval": "30_seconds",
+            "target_account": "Sploofmeme"
         }
     except Exception as e:
         logger.error(f"Error starting monitoring: {e}")
